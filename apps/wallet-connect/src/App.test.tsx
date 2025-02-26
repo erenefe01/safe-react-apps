@@ -25,6 +25,7 @@ import {
   mockValidTransactionRequest,
 } from './mocks/mocks'
 import { renderWithProviders } from './utils/test-helpers'
+import { compatibleSafeMethods, errorLabel } from './hooks/useWalletConnectV2'
 
 const CONNECTION_INPUT_TEXT = 'QR code or connection link'
 const HELP_TITLE = 'How to connect to a Dapp?'
@@ -34,9 +35,6 @@ const version1URI =
 
 const version2URI =
   'wc:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@2?relay-protocol=irn&symKey=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-
-const invalidConnectionErrorLabel =
-  'Connection refused: Incompatible chain detected. Make sure the Dapp uses Goerli to interact with this Safe.'
 
 jest.mock('@safe-global/safe-gateway-typescript-sdk', () => {
   return {
@@ -381,9 +379,10 @@ describe('Walletconnect unit tests', () => {
         expect(mockRejectSession).not.toBeCalled()
 
         // No error label is present
-        expect(screen.queryByText(invalidConnectionErrorLabel)).not.toBeInTheDocument()
+        expect(screen.queryByText(errorLabel)).not.toBeInTheDocument()
 
         const safeAccount = [`eip155:${mockSafeInfo.chainId}:${mockSafeInfo.safeAddress}`]
+        const safeChain = [`eip155:${mockSafeInfo.chainId}`]
 
         // approved session is sent
         expect(mockApproveSession).toBeCalledWith({
@@ -391,24 +390,15 @@ describe('Walletconnect unit tests', () => {
           namespaces: {
             eip155: {
               accounts: safeAccount,
-              methods: mockSessionProposal.params.requiredNamespaces.eip155.methods,
+              methods: compatibleSafeMethods,
               events: mockSessionProposal.params.requiredNamespaces.eip155.events,
+              chains: safeChain,
             },
           },
         })
-
-        // accountsChanged event is sent with the chain and the address of the safe
-        expect(mockEmitSessionEvent).toBeCalledWith({
-          topic: mockV2SessionObj.topic,
-          event: {
-            name: 'accountsChanged',
-            data: [mockSafeInfo.safeAddress],
-          },
-          chainId: `eip155:${mockSafeInfo.chainId}`,
-        })
       })
 
-      it('rejects session proposals without at least a EVM based namespace', async () => {
+      it('rejects session proposals without a EVM based namespace', async () => {
         let fireSessionProposalEvent = (
           proposal: SignClientTypes.EventArguments['session_proposal'],
         ) => {}
@@ -420,7 +410,7 @@ describe('Walletconnect unit tests', () => {
         })
 
         mockApproveSession.mockImplementation(() => {
-          return Promise.resolve(mockV2SessionObj)
+          return Promise.reject()
         })
 
         renderWithProviders(<WalletconnectSafeApp />)
@@ -437,19 +427,25 @@ describe('Walletconnect unit tests', () => {
         })
 
         // error label to provide feedback to the user
-        await waitFor(() =>
-          expect(screen.getByText(invalidConnectionErrorLabel)).toBeInTheDocument(),
-        )
+        await waitFor(() => expect(screen.getByText(errorLabel)).toBeInTheDocument())
 
-        expect(mockApproveSession).not.toBeCalled()
-        expect(mockRejectSession).toBeCalledWith({
-          id: mockInvalidEVMSessionProposal.id,
-          reason: {
-            code: 5100,
-            message:
-              'Unsupported chains. No EVM-based (eip155) namespace present in the session proposal',
+        const safeAccount = [`eip155:${mockSafeInfo.chainId}:${mockSafeInfo.safeAddress}`]
+        const safeChain = [`eip155:${mockSafeInfo.chainId}`]
+
+        // we try to connect
+        expect(mockApproveSession).toHaveBeenCalledWith({
+          id: 1111111111111111,
+          namespaces: {
+            eip155: {
+              accounts: safeAccount,
+              chains: safeChain,
+              events: [],
+              methods: compatibleSafeMethods,
+            },
           },
         })
+
+        expect(mockRejectSession).toBeCalled()
       })
 
       it('rejects session proposals without Safe chain', async () => {
@@ -464,7 +460,9 @@ describe('Walletconnect unit tests', () => {
         })
 
         mockApproveSession.mockImplementation(() => {
-          return Promise.resolve(mockV2SessionObj)
+          return Promise.reject({
+            message: 'chains', // wallet connect rejects the connection now
+          })
         })
 
         renderWithProviders(<WalletconnectSafeApp />)
@@ -481,19 +479,25 @@ describe('Walletconnect unit tests', () => {
         })
 
         // error label to provide feedback to the user
-        await waitFor(() =>
-          expect(screen.getByText(invalidConnectionErrorLabel)).toBeInTheDocument(),
-        )
+        await waitFor(() => expect(screen.getByText(errorLabel)).toBeInTheDocument())
 
-        expect(mockApproveSession).not.toBeCalled()
-        expect(mockRejectSession).toBeCalledWith({
-          id: mockInvalidEVMSessionProposal.id,
-          reason: {
-            code: 5100,
-            message:
-              'Unsupported chains. No Goerli (eip155:5) namespace present in the session proposal',
+        const safeAccount = [`eip155:${mockSafeInfo.chainId}:${mockSafeInfo.safeAddress}`]
+        const safeChain = [`eip155:${mockSafeInfo.chainId}`]
+
+        // we try to connect
+        expect(mockApproveSession).toHaveBeenCalledWith({
+          id: 1111111111111111,
+          namespaces: {
+            eip155: {
+              accounts: safeAccount,
+              chains: safeChain,
+              events: [],
+              methods: compatibleSafeMethods,
+            },
           },
         })
+
+        expect(mockRejectSession).toBeCalled()
       })
     })
 
@@ -530,7 +534,7 @@ describe('Walletconnect unit tests', () => {
         })
 
         const errorMessageLabel =
-          'Transaction rejected: the connected Dapp is not set to the correct chain. Make sure the Dapp uses Goerli to interact with this Safe.'
+          'Transaction rejected: the connected Dapp is not set to the correct chain. Make sure the Dapp only uses Goerli to interact with this Safe.'
 
         expect(screen.queryByText(errorMessageLabel)).not.toBeInTheDocument()
 
@@ -578,7 +582,7 @@ describe('Walletconnect unit tests', () => {
         })
 
         const errorMessageLabel =
-          'Transaction rejected: the connected Dapp is not set to the correct chain. Make sure the Dapp uses Goerli to interact with this Safe.'
+          'Transaction rejected: the connected Dapp is not set to the correct chain. Make sure the Dapp only uses Goerli to interact with this Safe.'
 
         // respond with an transaction rejected error
         expect(mockRespondSessionRequest).toBeCalledWith({
@@ -646,62 +650,6 @@ describe('Walletconnect unit tests', () => {
               jsonrpc: '2.0',
               error: {
                 code: 4001,
-                message: errorMessageLabel,
-              },
-            },
-          }),
-        )
-
-        expect(mockRespondSessionRequest).toBeCalledTimes(1)
-      })
-
-      it('shows an error if a invalid eth_signTransaction method is sent', async () => {
-        // configure autoconnection
-        mockGetActiveSessions.mockImplementation(() => mockActiveSessions)
-
-        const errorMessageLabel = 'eth_signTransaction method is not implemented'
-
-        // mock web3 send with the user rejection
-        mockWeb3Stub.send.mockImplementation(() => Promise.reject({ message: errorMessageLabel }))
-
-        let fireTransactionProposalEvent = (
-          proposal: SignClientTypes.EventArguments['session_request'],
-        ) => {}
-
-        mockWalletconnectEvent.mockImplementation((eventType, callback) => {
-          if (eventType === 'session_request') {
-            fireTransactionProposalEvent = callback
-          }
-        })
-
-        renderWithProviders(<WalletconnectSafeApp />)
-
-        // wait for loader to be removed
-        await waitForElementToBeRemoved(() => screen.queryByRole('progressbar'))
-
-        expect(mockApproveSession).not.toBeCalled()
-        expect(mockRejectSession).not.toBeCalled()
-        expect(mockRespondSessionRequest).not.toBeCalled()
-
-        act(() => {
-          // simulate a valid transaction
-          fireTransactionProposalEvent(mockValidTransactionRequest)
-        })
-
-        // we show a error label
-        await waitFor(() => {
-          expect(screen.getByText(errorMessageLabel)).toBeInTheDocument()
-        })
-
-        // responds to the Dapp with a valid transaction message
-        await waitFor(() =>
-          expect(mockRespondSessionRequest).toBeCalledWith({
-            topic: mockValidTransactionRequest.topic,
-            response: {
-              id: mockValidTransactionRequest.id,
-              jsonrpc: '2.0',
-              error: {
-                code: 1001,
                 message: errorMessageLabel,
               },
             },

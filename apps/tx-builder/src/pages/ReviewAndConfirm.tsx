@@ -1,15 +1,4 @@
 import { useEffect, useState } from 'react'
-import {
-  Button,
-  ButtonLink,
-  Card,
-  FixedIcon,
-  IconText,
-  Link,
-  Title,
-  Loader,
-  Text,
-} from '@gnosis.pm/safe-react-components'
 import styled from 'styled-components'
 import { useNavigate } from 'react-router-dom'
 
@@ -21,6 +10,16 @@ import SuccessBatchCreationModal from '../components/modals/SuccessBatchCreation
 import { useTransactionLibrary, useTransactions } from '../store'
 import { useSimulation } from '../hooks/useSimulation'
 import { FETCH_STATUS } from '../utils'
+import Button from '../components/Button'
+import FixedIcon from '../components/FixedIcon'
+import Text from '../components/Text'
+import Link from '../components/Link'
+import ButtonLink from '../components/buttons/ButtonLink'
+import { Typography } from '@material-ui/core'
+import Loader from '../components/Loader'
+import IconText from '../components/IconText'
+import Card from '../components/Card'
+import Wrapper from '../components/Wrapper'
 
 const ReviewAndConfirm = () => {
   const {
@@ -78,8 +77,8 @@ const ReviewAndConfirm = () => {
 
   return (
     <>
-      <Wrapper>
-        <StyledTitle size="xl">Review and Confirm</StyledTitle>
+      <Wrapper centered>
+        <StyledTitle>Review and Confirm</StyledTitle>
 
         <TransactionsBatchList
           batchTitle={'Transactions Batch'}
@@ -96,7 +95,6 @@ const ReviewAndConfirm = () => {
         <ButtonsWrapper>
           {/* Send batch button */}
           <Button
-            size="md"
             type="button"
             disabled={!transactions.length}
             variant="contained"
@@ -109,10 +107,8 @@ const ReviewAndConfirm = () => {
 
           {/* Cancel batch button */}
           <Button
-            size="md"
             type="button"
             disabled={!transactions.length}
-            variant="bordered"
             color="error"
             onClick={openDeleteBatchModal}
           >
@@ -121,13 +117,7 @@ const ReviewAndConfirm = () => {
 
           {/* Simulate batch button */}
           {simulationSupported && (
-            <Button
-              size="md"
-              type="button"
-              variant="contained"
-              color="secondary"
-              onClick={clickSimulate}
-            >
+            <Button type="button" variant="bordered" color="primary" onClick={clickSimulate}>
               Simulate
             </Button>
           )}
@@ -139,21 +129,17 @@ const ReviewAndConfirm = () => {
             <StyledButton
               iconType="cross"
               iconSize="sm"
-              color="inputFilled"
+              color="primary"
               onClick={closeSimulation}
             ></StyledButton>
             {simulationRequestStatus === FETCH_STATUS.ERROR && (
-              <Text color="error" size="lg">
-                An unexpected error occurred during simulation.
-              </Text>
+              <Text color="error">An unexpected error occurred during simulation.</Text>
             )}
 
             {simulationRequestStatus === FETCH_STATUS.LOADING && (
               <>
                 <Loader size="xs" />
-                <Text color="inputFilled" size="lg">
-                  Running simulation...
-                </Text>
+                <Text>Running simulation...</Text>
               </>
             )}
 
@@ -166,15 +152,14 @@ const ReviewAndConfirm = () => {
                       iconType="alert"
                       iconColor="error"
                       text="Failed"
-                      textSize="lg"
                       color="error"
                     />
-                    <Text color="inputFilled" size="lg">
+                    <Text variant="body2">
                       The batch failed during the simulation throwing error{' '}
                       <b>{simulation.transaction.error_message}</b> in the contract at{' '}
                       <b>{simulation.transaction.error_info?.address}</b>. Full simulation report is
                       available{' '}
-                      <Link href={simulationLink} target="_blank" rel="noreferrer" size="lg">
+                      <Link href={simulationLink} target="_blank" rel="noreferrer">
                         <b>on Tenderly</b>
                       </Link>
                       .
@@ -188,12 +173,11 @@ const ReviewAndConfirm = () => {
                       iconType="check"
                       iconColor="primary"
                       text="Success"
-                      textSize="lg"
                       color="primary"
                     />
-                    <Text color="inputFilled" size="lg">
+                    <Text variant="body2">
                       The batch was successfully simulated. Full simulation report is available{' '}
-                      <Link href={simulationLink} target="_blank" rel="noreferrer" size="lg">
+                      <Link href={simulationLink} target="_blank" rel="noreferrer">
                         <b>on Tenderly</b>
                       </Link>
                       .
@@ -236,21 +220,24 @@ const ReviewAndConfirm = () => {
 export default ReviewAndConfirm
 
 const StyledButton = styled(ButtonLink)`
-  position: absolute;
-  right: 26px;
-  padding: 5px;
-  width: 26px;
-  height: 26px;
+  && {
+    position: absolute;
+    right: 26px;
+    padding: 5px;
+    width: 26px;
+    height: 26px;
 
-  :hover {
-    background: ${({ theme }) => theme.colors.separator};
-    border-radius: 16px;
+    :hover {
+      background: ${({ theme }) => theme.palette.divider};
+      border-radius: 16px;
+    }
   }
 `
 
 const SimulationContainer = styled(Card)`
   box-shadow: none;
   margin: 24px 0 0 34px;
+  background: ${({ theme }) => theme.palette.background.paper};
 
   // last child is the status result
   & > :last-child {
@@ -258,19 +245,14 @@ const SimulationContainer = styled(Card)`
   }
 `
 
-const Wrapper = styled.main`
+const StyledTitle = styled(Typography)`
   && {
-    padding: 120px 48px 48px;
-    max-width: 650px;
-    margin: 0 auto;
+    margin-top: 0px;
+    margin-bottom: 1rem;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: normal;
   }
-`
-
-const StyledTitle = styled(Title)`
-  margin-top: 0px;
-  margin-bottom: 5px;
-  font-size: 20px;
-  line-height: normal;
 `
 
 const ButtonsWrapper = styled.div`

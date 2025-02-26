@@ -2,6 +2,56 @@
 
 This file was generated using [@jscutlery/semver](https://github.com/jscutlery/semver).
 
+## [1.13.2](https://github.com/safe-global/safe-react-apps/compare/wallet-connect-1.13.1...wallet-connect-1.13.2) (2025-01-22)
+
+
+
+## [1.13.1](https://github.com/safe-global/safe-react-apps/compare/wallet-connect-1.13.0...wallet-connect-1.13.1) (2023-08-23)
+
+
+
+# [1.13.0](https://github.com/safe-global/safe-react-apps/compare/wallet-connect-1.12.2...wallet-connect-1.13.0) (2023-07-12)
+
+
+### Features
+
+* **wallet-connect:** Merge pull request [#735](https://github.com/safe-global/safe-react-apps/issues/735) from safe-global/feat/improve-wallet-connect-messages ([9105fa6](https://github.com/safe-global/safe-react-apps/commit/9105fa6cdbc825e0bd6e99e7031d81552ad0df33))
+
+
+
+## [1.12.2](https://github.com/safe-global/safe-react-apps/compare/wallet-connect-1.12.1...wallet-connect-1.12.2) (2023-07-10)
+
+
+### Bug Fixes
+
+* **wallet-connect:** Enable dApps to use optional chains and avoid session rejection ([#727](https://github.com/safe-global/safe-react-apps/issues/727)) ([6e79a23](https://github.com/safe-global/safe-react-apps/commit/6e79a23599a64e9917eb8bc4fd990a12970f2f08))
+* **wallet-connect:** Improved Walletconnect rejection messages to dApps ([#729](https://github.com/safe-global/safe-react-apps/issues/729)) ([e7b8b2c](https://github.com/safe-global/safe-react-apps/commit/e7b8b2c18c3af1dc829e0ec49e7726cc22370fe9))
+
+
+
+## [1.12.1](https://github.com/safe-global/safe-react-apps/compare/wallet-connect-1.12.0...wallet-connect-1.12.1) (2023-06-26)
+
+
+### Bug Fixes
+
+* **wallet-connect:** Removed workaround of accepting all accounts, methods & events in V2 ([#706](https://github.com/safe-global/safe-react-apps/issues/706)) ([22e499e](https://github.com/safe-global/safe-react-apps/commit/22e499ef0a213f61e6629ae758160afa47e8d370))
+
+
+
+# [1.12.0](https://github.com/safe-global/safe-react-apps/compare/wallet-connect-1.11.0...wallet-connect-1.12.0) (2023-05-11)
+
+
+### Bug Fixes
+
+* **tx-builder,wallet-connect:** update help centre link ([c724a85](https://github.com/safe-global/safe-react-apps/commit/c724a8566e81bc895c0fa42213ba6ef98992f9a6))
+
+
+### Features
+
+* **wallet-connect:** update safe-apps-sdk to enable synchronous off-chain signatures ([#657](https://github.com/safe-global/safe-react-apps/issues/657)) ([6b1562f](https://github.com/safe-global/safe-react-apps/commit/6b1562f59eeaff662c212ee0b71f7df602cf0185))
+
+
+
 # [1.11.0](https://github.com/safe-global/safe-react-apps/compare/wallet-connect-1.10.0...wallet-connect-1.11.0) (2023-02-27)
 
 

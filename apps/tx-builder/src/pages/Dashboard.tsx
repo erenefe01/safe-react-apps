@@ -1,6 +1,5 @@
 import { ReactElement, useCallback, useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
-import { AddressInput, Divider, Switch, Text, Title } from '@gnosis.pm/safe-react-components'
 import styled from 'styled-components'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import Grid from '@material-ui/core/Grid'
@@ -14,6 +13,12 @@ import { ContractInterface } from '../typings/models'
 import { useNetwork } from '../store'
 import { useAbi } from '../hooks/useAbi'
 import { ImplementationABIDialog } from '../components/modals/ImplementationABIDialog'
+import Text from '../components/Text'
+import Switch from '../components/Switch'
+import { Typography } from '@material-ui/core'
+import Divider from '../components/Divider'
+import AddressInput from '../components/forms/fields/AddressInput'
+import Wrapper from '../components/Wrapper'
 
 const Dashboard = (): ReactElement => {
   const [abiAddress, setAbiAddress] = useState('')
@@ -101,11 +106,11 @@ const Dashboard = (): ReactElement => {
 
   return (
     <Wrapper>
-      <Grid alignItems="flex-start" container justifyContent="center" spacing={6}>
+      <Grid container justifyContent="center" alignItems="flex-start" spacing={6}>
         <AddNewTransactionFormWrapper item xs={12} md={6}>
           <Grid container alignItems="center">
             <Grid item xs={6}>
-              <StyledTitle size="lg">New Transaction</StyledTitle>
+              <StyledTitle variant="h6">New Transaction</StyledTitle>
             </Grid>
             <Grid container item xs={6} alignItems="center" justifyContent="flex-end">
               <Grid item>
@@ -115,7 +120,7 @@ const Dashboard = (): ReactElement => {
                 />
               </Grid>
               <Grid item>
-                <Text size="lg">Custom data</Text>
+                <Text variant="body2">Custom data</Text>
               </Grid>
             </Grid>
           </Grid>
@@ -148,7 +153,7 @@ const Dashboard = (): ReactElement => {
 
           {/* ABI Warning */}
           {abiStatus === FETCH_STATUS.ERROR && (
-            <StyledWarningText color="warning" size="lg">
+            <StyledWarningText color="warning" variant="body2">
               No ABI found for this address
             </StyledWarningText>
           )}
@@ -157,14 +162,14 @@ const Dashboard = (): ReactElement => {
 
           {/* No public methods Warning */}
           {showNoPublicMethodsWarning && (
-            <StyledMethodWarning color="warning" size="lg">
+            <StyledMethodWarning color="warning" variant="body2">
               Contract ABI doesn't have any public methods.
             </StyledMethodWarning>
           )}
 
           {showNewTransactionForm && (
             <>
-              <StyledDivider />
+              <Divider />
               <AddNewTransactionForm
                 contract={contract}
                 to={transactionRecipientAddress}
@@ -187,12 +192,20 @@ const Dashboard = (): ReactElement => {
           onCancel={() => {
             setAbiAddress(implementationABIDialog.proxyAddress)
             setTransactionRecipientAddress(implementationABIDialog.proxyAddress)
-            setImplementationABIDialog({ open: false, implementationAddress: '', proxyAddress: '' })
+            setImplementationABIDialog({
+              open: false,
+              implementationAddress: '',
+              proxyAddress: '',
+            })
           }}
           onConfirm={() => {
             setAbiAddress(implementationABIDialog.implementationAddress)
             setTransactionRecipientAddress(implementationABIDialog.proxyAddress)
-            setImplementationABIDialog({ open: false, implementationAddress: '', proxyAddress: '' })
+            setImplementationABIDialog({
+              open: false,
+              implementationAddress: '',
+              proxyAddress: '',
+            })
           }}
         />
       )}
@@ -202,41 +215,38 @@ const Dashboard = (): ReactElement => {
 
 export default Dashboard
 
-const Wrapper = styled.main`
+const AddNewTransactionFormWrapper = styled(Grid)`
+  border-radius: 8px;
+  background-color: ${({ theme }) => theme.palette.background.paper};
+  color: ${({ theme }) => theme.palette.text.primary};
+`
+
+const StyledTitle = styled(Typography)`
   && {
-    padding: 120px 48px 48px;
-    max-width: 1024px;
-    margin: 0 auto;
+    font-weight: 700;
   }
 `
 
-const AddNewTransactionFormWrapper = styled(Grid)`
-  border-radius: 8px;
-  background-color: white;
-`
-
-const StyledTitle = styled(Title)`
-  font-weight: bold;
-  margin-top: 0px;
-  margin-bottom: 5px;
-  line-height: 22px;
-  font-size: 16px;
-`
-
 const StyledMethodWarning = styled(Text)`
-  margin-top: 8px;
-`
-
-const StyledDivider = styled(Divider)`
-  margin: 16px -24px 32px -24px;
+  && {
+    margin-top: 8px;
+  }
 `
 
 const StyledWarningText = styled(Text)`
-  margin-top: -18px;
-  margin-bottom: 14px;
+  && {
+    margin-top: -18px;
+    margin-bottom: 14px;
+  }
 `
 
 const CheckIconAddressAdornment = styled(CheckCircle)`
-  color: #03ae60;
-  height: 20px;
+  && path {
+    color: ${({ theme }) => theme.palette.secondary.dark};
+    height: 20px;
+  }
+`
+
+const StyledDivider = styled(Divider)`
+  margin-bottom: 1.8rem;
 `

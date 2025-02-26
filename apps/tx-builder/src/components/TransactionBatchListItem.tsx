@@ -1,13 +1,3 @@
-import {
-  Accordion,
-  AccordionSummary,
-  Dot,
-  EthHashInfo,
-  FixedIcon,
-  Icon,
-  Text,
-  Tooltip,
-} from '@gnosis.pm/safe-react-components'
 import { AccordionDetails, IconButton } from '@material-ui/core'
 import { memo, useState } from 'react'
 import { DraggableProvided, DraggableStateSnapshot } from 'react-beautiful-dnd'
@@ -16,6 +6,13 @@ import DragIndicatorIcon from '@material-ui/icons/DragIndicator'
 import { ProposedTransaction } from '../typings/models'
 import TransactionDetails from './TransactionDetails'
 import { getTransactionText } from '../utils'
+import Text from './Text'
+import { Accordion, AccordionSummary } from './Accordion'
+import { Tooltip } from './Tooltip'
+import EthHashInfo from './ETHHashInfo'
+import { Icon } from './Icon'
+import FixedIcon from './FixedIcon'
+import Dot from './Dot'
 
 const UNKNOWN_POSITION_LABEL = '?'
 const minArrowSize = '12'
@@ -86,8 +83,8 @@ const TransactionBatchListItem = memo(
       <TransactionListItem ref={provided.innerRef} {...provided.draggableProps}>
         {/* Transacion Position */}
         <PositionWrapper>
-          <PositionDot color="tag" isDragging={isThisTxBeingDragging}>
-            <Text size="xl">{displayedTxPosition}</Text>
+          <PositionDot color="primary" isDragging={isThisTxBeingDragging}>
+            <Text>{displayedTxPosition}</Text>
           </PositionDot>
           {showArrowAdornment && <ArrowAdornment />}
         </PositionWrapper>
@@ -107,19 +104,13 @@ const TransactionBatchListItem = memo(
             >
               {/* Drag & Drop Indicator */}
               {reorderTransactions && (
-                <Tooltip
-                  placement="top"
-                  title="Drag and Drop"
-                  backgroundColor="primary"
-                  textColor="white"
-                  arrow
-                >
+                <Tooltip placement="top" title="Drag and Drop" backgroundColor="primary" arrow>
                   <DragAndDropIndicatorIcon fontSize="small" />
                 </Tooltip>
               )}
 
               {/* Destination Address label */}
-              <EthHashInfo
+              <StyledEthHashInfo
                 shortName={networkPrefix || ''}
                 hash={to}
                 shortenHash={4}
@@ -127,13 +118,13 @@ const TransactionBatchListItem = memo(
               />
 
               {/* Transaction Description label */}
-              <TransactionsDescription size="lg">{transactionDescription}</TransactionsDescription>
+              <TransactionsDescription>{transactionDescription}</TransactionsDescription>
 
               {/* Transaction Actions */}
 
               {/* Edit transaction */}
               {replaceTransaction && (
-                <Tooltip title="Edit transaction" backgroundColor="primary" textColor="white" arrow>
+                <Tooltip title="Edit transaction" backgroundColor="primary" arrow>
                   <TransactionActionButton
                     size="medium"
                     aria-label="Edit transaction"
@@ -150,13 +141,7 @@ const TransactionBatchListItem = memo(
 
               {/* Delete transaction */}
               {removeTransaction && (
-                <Tooltip
-                  placement="top"
-                  title="Delete transaction"
-                  backgroundColor="primary"
-                  textColor="white"
-                  arrow
-                >
+                <Tooltip placement="top" title="Delete transaction" backgroundColor="primary" arrow>
                   <TransactionActionButton
                     onClick={event => {
                       event.stopPropagation()
@@ -177,7 +162,6 @@ const TransactionBatchListItem = memo(
                   placement="top"
                   title="Expand transaction details"
                   backgroundColor="primary"
-                  textColor="white"
                   arrow
                 >
                   <TransactionActionButton
@@ -188,7 +172,7 @@ const TransactionBatchListItem = memo(
                     size="medium"
                     aria-label="Expand transaction details"
                   >
-                    <FixedIcon type={'chevronDown'} />
+                    <StyledArrow isTxExpanded={isTxExpanded} type={'chevronDown'} />
                   </TransactionActionButton>
                 </Tooltip>
               )}
@@ -240,7 +224,17 @@ const TransactionListItem = styled.li`
   margin-bottom: 8px;
 `
 
-// transaction postion dot styles
+const StyledArrow = styled(FixedIcon)<{ isTxExpanded: boolean }>`
+  .icon-color {
+    fill: #b2b5b2;
+  }
+  ${({ isTxExpanded }) =>
+    isTxExpanded &&
+    `
+    transform: rotateZ(180deg);
+
+  `}
+`
 
 const PositionWrapper = styled.div`
   display: flex;
@@ -255,13 +249,13 @@ const PositionDot = styled(Dot).withConfig({
   height: 24px;
   width: 24px;
   min-width: 24px;
-  background-color: ${({ isDragging }) => (isDragging ? '#92c9be' : ' #e2e3e3')};
+  background-color: ${({ theme }) => theme.palette.border.light};
   transition: background-color 0.5s linear;
 `
 
 const ArrowAdornment = styled.div`
   position: relative;
-  border-left: 1px solid #e2e3e3;
+  border-left: 1px solid ${({ theme }) => theme.palette.border.light};
   flex-grow: 1;
   margin-top: 8px;
 
@@ -269,7 +263,7 @@ const ArrowAdornment = styled.div`
     content: ' ';
     display: inline-block;
     position: absolute;
-    border-left: 1px solid #e2e3e3;
+    border-left: 1px solid ${({ theme }) => theme.palette.border.light};
 
     height: ${minArrowSize}px;
     bottom: -${minArrowSize}px;
@@ -285,7 +279,7 @@ const ArrowAdornment = styled.div`
 
     border-width: 0 1px 1px 0;
     border-style: solid;
-    border-color: #e2e3e3;
+    border-color: ${({ theme }) => theme.palette.border.light};
     padding: 3px;
 
     transform: rotate(45deg);
@@ -301,27 +295,35 @@ const StyledAccordion = styled(Accordion).withConfig({
 
   &.MuiAccordion-root {
     margin-bottom: 0;
-    border-color: ${({ isDragging, expanded }) => (isDragging || expanded ? '#92c9be' : '#e8e7e6')};
+    border-width: 1px;
+    border-color: ${({ isDragging, expanded, theme }) =>
+      isDragging || expanded ? theme.palette.secondary.light : theme.palette.background.paper};
     transition: border-color 0.5s linear;
+
+    &:hover {
+      border-color: ${({ theme }) => theme.palette.secondary.light};
+
+      .MuiAccordionSummary-root {
+        background-color: ${({ theme }) => theme.palette.secondary.background};
+      }
+    }
   }
 
   .MuiAccordionSummary-root {
     height: 52px;
     padding: 0px 8px;
-    background-color: ${({ isDragging }) => (isDragging ? '#EFFAF8' : '#FFFFFF')};
-
-    &:hover {
-      background-color: #ffffff;
-    }
+    background-color: ${({ isDragging, theme }) =>
+      isDragging ? theme.palette.secondary.background : theme.palette.background.paper};
 
     .MuiIconButton-root {
       padding: 8px;
     }
 
     &.Mui-expanded {
-      background-color: #effaf8;
-      border-color: ${({ isDragging, expanded }) =>
-        isDragging || expanded ? '#92c9be' : '#e8e7e6'};
+      border-width: 1px;
+      background-color: ${({ theme }) => theme.palette.secondary.background};
+      border-color: ${({ isDragging, expanded, theme }) =>
+        isDragging || expanded ? theme.palette.secondary.light : '#e8e7e6'};
     }
   }
 
@@ -338,17 +340,26 @@ const TransactionActionButton = styled(IconButton)`
 `
 
 const TransactionsDescription = styled(Text)`
-  flex-grow: 1;
-  padding-left: 24px;
+  && {
+    flex-grow: 1;
+    padding-left: 24px;
+    font-size: 14px;
 
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 `
 
 const DragAndDropIndicatorIcon = styled(DragIndicatorIcon)`
   color: #b2bbc0;
   margin-right: 4px;
+`
+
+const StyledEthHashInfo = styled(EthHashInfo)`
+  p {
+    font-size: 14px;
+  }
 `
 
 export default TransactionBatchListItem
